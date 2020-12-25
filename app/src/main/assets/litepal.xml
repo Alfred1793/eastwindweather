@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <litepal>
-    <dbname values="ew_weather"/>
-    <version values="1"/>
+    <dbname value="ew_weather"/>
+    <version value="1"/>
     <list>
         <mapping class="tech.cncloud.eastwindweather.db.Province"/>
         <mapping class="tech.cncloud.eastwindweather.db.City"/>
-        <mapping class="tech.cncloud.eastwindweather.db.County"/>
+        <mapping class="tech.cncloud.eastwindweather.db.county"/>
     </list>
 </litepal>

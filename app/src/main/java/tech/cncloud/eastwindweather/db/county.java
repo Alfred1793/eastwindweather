@@ -1,9 +1,12 @@
 package tech.cncloud.eastwindweather.db;
 
-public class county {
+
+import org.litepal.crud.LitePalSupport;
+
+public class county extends LitePalSupport {
     private int id;
     private String countyName;
-    private int weatherID;
+    private String weatherID;
     private int cityId;
 
     public int getId(){
@@ -29,11 +32,11 @@ public class county {
         this.cityId=cityId;
     }
 
-    public int getWeatherID() {
+    public String getWeatherID() {
         return weatherID;
     }
 
-    public void setWeatherID(int weatherID) {
+    public void setWeatherID(String weatherID) {
         this.weatherID = weatherID;
     }
 }

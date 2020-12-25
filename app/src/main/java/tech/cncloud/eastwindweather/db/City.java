@@ -1,6 +1,8 @@
 package tech.cncloud.eastwindweather.db;
 
-public class City {
+import org.litepal.crud.LitePalSupport;
+
+public class City extends LitePalSupport {
     private int id;
     private String cityName;
     private int cityCode;

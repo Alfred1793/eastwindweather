@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">EastWindWeather</string>
+    <string name="back">back</string>
 </resources>
