@@ -1,6 +1,7 @@
 package tech.cncloud.eastwindweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -77,6 +78,12 @@ public class ChooseAreaFragment extends Fragment {
                 else if(currentLevel==level_city){
                     selectedCity=cityList.get(position);
                     queryCounties();
+                }else if(currentLevel==level_county){
+                    String weatherId=countyList.get(position).getWeatherID();
+                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
+                    intent.putExtra("weather_id",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
