@@ -33,6 +33,7 @@ import tech.cncloud.eastwindweather.util.HttpUtil;
 import tech.cncloud.eastwindweather.util.Utility;
 
 public class WeatherActivity extends AppCompatActivity {
+    //建立与ui中对应的对象
     private ScrollView weatherLayout;
     private TextView titleCity;
     private TextView titleUpdateTime;
@@ -55,6 +56,7 @@ public class WeatherActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //若版本够高就设置状态栏沉浸
         if(Build.VERSION.SDK_INT>=21)
         {
             View decorView=getWindow().getDecorView();
@@ -64,6 +66,7 @@ public class WeatherActivity extends AppCompatActivity {
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(R.layout.activity_weather);
+        //初始化
         weatherLayout=(ScrollView)findViewById(R.id.weather_layout);
         titleCity=(TextView)findViewById(R.id.title_city);
         titleUpdateTime=(TextView)findViewById(R.id.title_update_time);
@@ -80,14 +83,17 @@ public class WeatherActivity extends AppCompatActivity {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
         navButton=(Button)findViewById(R.id.nav_button);
+        //若点击则展开列表选择城市
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
+        //获取缓存信息
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString=prefs.getString("weather",null);
+        //若缓存存在则进行解包
         if(weatherString!=null){
             Weather weather= Utility.handleWeatherResponse(weatherString);
             assert weather != null;
@@ -96,10 +102,12 @@ public class WeatherActivity extends AppCompatActivity {
         }
         else
         {
+            //获取天气id并调用获取天气的接口
             mWeatherId=getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
         }
+        //若下拉则刷新天气信息
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -107,6 +115,7 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
         String bingPic=prefs.getString("bing_pic",null);
+        //获取bing每日一图
         if(bingPic!=null){
             Glide.with(this).load(bingPic).into(bingPicImg);
         }
@@ -115,10 +124,11 @@ public class WeatherActivity extends AppCompatActivity {
             loadBingPic();
         }
     }
+    //获取天气信息
     public void requestWeather(final String weatherId){
+        //和风天气api
         String weatherUrl="http://guolin.tech/api/weather?cityid="+weatherId+"&key=" +
                 "f9b0567e2a63492893e451beac7525c2";
-        //weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=ab3468544a1846c8beb2c22c51102069";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -126,7 +136,7 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
+                        //结束刷新标识并输出错误信息
                         Toast.makeText(WeatherActivity.this,"获取天气信息失败",Toast.LENGTH_SHORT).show();
                         swipeRefresh.setRefreshing(false);
 
@@ -143,6 +153,7 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        //若天气对象成功获取则展示，失败则输出失败信息
                         if(weather!=null&&"ok".equals(weather.status)){
                             SharedPreferences.Editor editor=PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather",responseText);
@@ -162,6 +173,7 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
     }
+    //输出天气信息
     public void showWeatherInfo(Weather weather){
         String cityName=weather.basic.cityName;
         String updateTime=weather.basic.update.updateTime.split(" ")[1];
@@ -172,6 +184,7 @@ public class WeatherActivity extends AppCompatActivity {
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
+        //动态加载天气预报信息到layout中
         for(Forecast forecast:weather.forecastList){
             View view= LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
             TextView dateText=(TextView)view.findViewById(R.id.date_text);
@@ -184,6 +197,7 @@ public class WeatherActivity extends AppCompatActivity {
             minText.setText(forecast.temperature.min);
             forecastLayout.addView(view);
         }
+        //若大气质量信息不为空就设置大气质量信息
         if(weather.aqi!=null){
             aqiText.setText(weather.aqi.city.aqi);
             pm25Text.setText(weather.aqi.city.pm25);
@@ -197,6 +211,7 @@ public class WeatherActivity extends AppCompatActivity {
         weatherLayout.setVisibility(View.VISIBLE);
 
     }
+    //从bing每日一图api获取每日一图
     private void loadBingPic()
     {
         String requestBingPic="http://guolin.tech/api/bing_pic";
@@ -210,6 +225,7 @@ public class WeatherActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 assert response.body() != null;
                 final String bingPic=response.body().string();
+                //获取成功装入缓存信息
                 SharedPreferences.Editor editor=PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                 editor.putString("bing_pic",bingPic);
                 editor.apply();

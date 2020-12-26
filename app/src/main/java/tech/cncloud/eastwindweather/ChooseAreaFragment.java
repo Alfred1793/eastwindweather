@@ -56,6 +56,7 @@ public class ChooseAreaFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState)
     {
         View view=inflater.inflate(R.layout.choose_area,container,false);
+        //初始化并返回view实例
         titleText=(TextView) view.findViewById(R.id.title_text);
         backButton=(ImageButton) view.findViewById(R.id.back_button);
         listView=(ListView) view.findViewById(R.id.list_view);
@@ -67,6 +68,7 @@ public class ChooseAreaFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
+        //根据当前所处列表层级不同展示不同信息
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -80,6 +82,7 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 }else if(currentLevel==level_county){
                     String weatherId=countyList.get(position).getWeatherID();
+                    //根据是在天气页面改变城市还是初始化城市两种情况进行区分
                     if(getActivity() instanceof MainActivity)
                     {
                         Intent intent=new Intent(getActivity(),WeatherActivity.class);
@@ -99,6 +102,7 @@ public class ChooseAreaFragment extends Fragment {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //若返回上一级从数据库中加载信息
                 if(currentLevel==level_county)
                 {
                     queryCities();
@@ -115,14 +119,20 @@ public class ChooseAreaFragment extends Fragment {
         titleText.setText("中国");
         Log.e("info","getpro!!!!!");
         backButton.setVisibility(View.GONE);
+        //从数据库查找
         provinceList= LitePal.findAll(Province.class);
+        //若省信息不为空输出
+        // 为空通过服务器获取
         if(provinceList.size()>0)
         {
+            //清空展示列表
             dataList.clear();;
+            //将省名进行添加
             for(Province province:provinceList)
             {
                 dataList.add(province.getProvinceName());
             }
+            //通知adapter已经改变
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel=level_province;
@@ -130,17 +140,23 @@ public class ChooseAreaFragment extends Fragment {
         else
         {
             String address="http://guolin.tech/api/china";
+            //通过服务器获取相关信息
             queryFromServer(address,"province");
         }
     }
+    //获取市一级信息
     private void queryCities(){
         titleText.setText(selectedProvince.getProvinceName());
         Log.e("info","getci!!!!!");
         backButton.setVisibility(View.VISIBLE);
         cityList = LitePal.where("provinceId = ?",String.valueOf(selectedProvince.getId())).find(City.class);
+        //若从数据库中能够找到信息则添加输出，
+        // 否则从服务器中请求
         if(cityList.size()>0)
         {
+            //清空展示列表
             dataList.clear();;
+            //将数据库中获取的城市名添加
             for(City city:cityList)
             {
                 dataList.add(city.getCityName());
@@ -157,6 +173,7 @@ public class ChooseAreaFragment extends Fragment {
             queryFromServer(address,"city");
         }
     }
+    //获取区一级
     private void queryCounties(){
         titleText.setText(selectedCity.getCityName());
         backButton.setVisibility(View.VISIBLE);
@@ -180,7 +197,7 @@ public class ChooseAreaFragment extends Fragment {
             queryFromServer(address,"county");
         }
     }
-
+    //从服务器获取信息
     private void queryFromServer(String address,final String type)
     {
         showProgressDialog();
@@ -190,6 +207,7 @@ public class ChooseAreaFragment extends Fragment {
                 Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        //输出失败信息
                         closeProgressDialog();
                         Toast.makeText(getContext(),"加载失败",Toast.LENGTH_SHORT).show();
                     }
@@ -201,6 +219,7 @@ public class ChooseAreaFragment extends Fragment {
                 assert response.body() != null;
                 String responseText=response.body().string();
                 boolean result=false;
+                //根据输入的数据需要调用工具类进行处理，并存入数据库
                 if("province".equals(type)){
                     result= Utility.handleProvinceResponse(responseText);
                 }
@@ -210,6 +229,7 @@ public class ChooseAreaFragment extends Fragment {
                 else if("county".equals(type)){
                     result=Utility.handleCountyResponse(responseText,selectedCity.getId());
                 }
+                //若上面的过程成功则从数据库载入刚存入的数据
                 if(result){
                     Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                         @Override
@@ -231,6 +251,7 @@ public class ChooseAreaFragment extends Fragment {
         });
 
     }
+    //显示正在加载
     private void showProgressDialog()
     {
         if(progressDialog==null)
@@ -241,6 +262,7 @@ public class ChooseAreaFragment extends Fragment {
         }
         progressDialog.show();
     }
+    //关闭正在加载
     private void closeProgressDialog(){
         if(progressDialog!=null)
         {
